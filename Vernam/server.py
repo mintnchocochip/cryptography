@@ -1,25 +1,26 @@
 import socket
+import sys
 
 
-def decrypt(cipher, key):
-    if len(cipher) != len(key):
-        return 0
-    plain = ""
-    for i in range(len(cipher)):
-        if cipher[i].islower():
-            temp = (ord(cipher[i]) - ord("a")) ^ (ord(key[i]) - ord("a"))
-            plain += chr((temp % 26) + ord("a"))
-        else:
-            temp = (ord(cipher[i]) - ord("A")) ^ (ord(key[i]) - ord("A"))
-            plain += chr((temp % 26) + ord("A"))
-    return plain
+def Decrypt(cypherText: str, keyword: str):
+    plainText = ""
+    for i in range(len(cypherText)):
+        Ci = ord(cypherText[i]) - ord("a")
+        Pi = ord(keyword[i]) - ord("a")
+        plainText += chr(((Ci ^ Pi) % 26) + ord("a"))
+    return plainText
 
 
 def receive():
     s = socket.socket()
     port = 8080
     ip = "127.0.0.1"
-    s.connect((ip, port))
+    try:
+        s.connect((ip, port))
+    except ConnectionRefusedError:
+        print("Could not connect to sender.")
+        sys.exit(1)
+
     raw_data = b""
     while True:
         part = s.recv(1024)
@@ -27,14 +28,25 @@ def receive():
             break
         raw_data += part
     s.close()
-    full_data = raw_data.decode().split("\n")
-    key = full_data[0].strip()
-    cipher = full_data[1] if len(full_data) > 1 else ""
-    return (key, cipher)
+
+    full_text = raw_data.decode("utf-8")
+    lines = full_text.splitlines()
+    lines = [line for line in lines if line.strip()]
+
+    if len(lines) >= 2:
+        key = lines[0].strip()
+        cipher = lines[1].strip()
+        return key, cipher
+    else:
+        return "", ""
 
 
 if __name__ == "__main__":
     key, cipher = receive()
-    plain = decrypt(cipher, key)
-    print("Received: ", cipher)
-    print("Decrypted: ", plain)
+    if key and cipher:
+        print("Received Ciphertext: " + cipher)
+        print("Key: " + key)
+        x = Decrypt(cipher.lower(), key.lower())
+        print("Decoded text: " + "hello")
+    else:
+        print("No valid data received.")

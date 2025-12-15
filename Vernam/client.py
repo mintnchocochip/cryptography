@@ -1,18 +1,16 @@
 import socket
 
 
-def encrypt(string, key):
-    if len(string) != len(key):
-        return 0
-    cipher = ""
-    for i in range(len(string)):
-        if string[i].islower():
-            temp = (ord(string[i]) - ord("a")) ^ (ord(key[i]) - ord("a"))
-            cipher += chr((temp % 26) + ord("a"))
-        else:
-            temp = (ord(string[i]) - ord("A")) ^ (ord(key[i]) - ord("A"))
-            cipher += chr((temp % 26) + ord("A"))
-    return cipher
+def Encrypt(plaintext, keyword):
+    plaintext = plaintext.lower()
+    keyword = keyword.lower()
+    ciphertxt = ""
+    for i in range(len(plaintext)):
+        Ki = ord(plaintext[i]) - ord("a")
+        Pi = ord(keyword[i]) - ord("a")
+        ciphertxt += chr(((Ki ^ Pi) % 26) + ord("a"))
+    print("Encoded text: " + ciphertxt)
+    return ciphertxt
 
 
 def transmit(string, key):
@@ -21,8 +19,10 @@ def transmit(string, key):
     port = 8080
     s.bind(("127.0.0.1", port))
     s.listen(5)
+    print("Listening for connections...")
     while True:
         c, addr = s.accept()
+        print(f"Connected to {addr}")
         try:
             c.sendall((key + "\n").encode())
             c.sendall((string + "\n").encode())
@@ -31,7 +31,7 @@ def transmit(string, key):
 
 
 if __name__ == "__main__":
-    key = "Fiver"
-    cipher = encrypt("Hello", "Fiver")
-    transmit(cipher, "Fiver")
-    print("Sent: " + cipher + ", " + key)
+    key = "abcde"
+    cipher = Encrypt("hello", key)
+    print("Sent: ", cipher, ", ", key)
+    transmit(cipher, key)
