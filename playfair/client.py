@@ -2,32 +2,37 @@ import socket
 
 
 def genbigram(plaintxt):
-    gen = len([plaintxt]) % 2
-    if gen != 0:
-        plaintxt += "x" * gen
+    if len(plaintxt) % 2 != 0:
+        plaintxt += "x"
+
     chars = list(plaintxt)
     bigram = []
-    for i in range(0, len(chars) - 1, 2):
-        if chars[i] == chars[i + 1]:
+    i = 0
+    while i < len(chars):
+        if i + 1 < len(chars):
+            if chars[i] == chars[i + 1]:
+                bigram.append([chars[i], "x"])
+                i += 1
+            else:
+                bigram.append([chars[i], chars[i + 1]])
+                i += 2
+        else:
             bigram.append([chars[i], "x"])
-        bigram.append([chars[i], chars[i + 1]])
-    # print(bigram)
+            i += 1
+
     return bigram
 
 
-def findrc(str, key):
+def findrc(char, key):
     for i in range(5):
         for j in range(5):
-            if key[i][j] == str:
+            if key[i][j] == char:
                 return (i, j)
-    return (
-        -1,
-        -1,
-    )
+    return (-1, -1)
 
 
-def decrypt(plaintxt, key):
-    bigram = genbigram(plaintxt)
+def decrypt(ciphertxt, key):
+    bigram = genbigram(ciphertxt)
     subbed = ""
     for sec in bigram:
         r1, c1 = findrc(sec[0], key)
@@ -51,14 +56,21 @@ def receive():
     s.connect(("127.0.0.1", port))
     data = s.recv(1024).decode()
     s.close()
-    parts = data.split("|")
-    key = list(map(int, parts[0].split(",")))
-    ciphertext = list(map(int, parts[1].split(",")))
+    parts = data.split("||")
+    key_data = parts[0]
+    ciphertext = parts[1]
+    key_rows = key_data.split("|")
+    key = []
+    for row_str in key_rows:
+        key.append(row_str.split(","))
     return ciphertext, key
 
 
 if __name__ == "__main__":
     ciphertxt, key = receive()
     plaintxt = decrypt(ciphertxt, key)
-    print("Received: ", ciphertxt)
-    print("Decrypted: ", plaintxt)
+    print("Key Matrix:")
+    for row in key:
+        print(row)
+    print(f"Received ciphertext: {ciphertxt}")
+    print(f"Decrypted plaintext: {plaintxt}")

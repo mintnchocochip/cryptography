@@ -19,46 +19,46 @@ def keygen(key):
         temp = "i"
     keychar = remcommon(key.lower())
     matval = remcommon(keychar.lower() + "abcdefgh" + temp + "klmnopqrstuvwxyz")
-    visited = {}
-    for c in "abcdefghijklmnopqrstuvwxyz":
-        visited[c] = False
 
-    key = []
+    key_matrix = []
     idx = 0
     for i in range(5):
-        tmp = []
+        row = []
         for j in range(5):
-            if not visited[matval[idx]]:
-                visited[matval[idx]] = True
-                tmp.append(matval[idx])
-                idx += 1
-        key.append(tmp)
-    return key
+            row.append(matval[idx])
+            idx += 1
+        key_matrix.append(row)
+    return key_matrix
 
 
 def genbigram(plaintxt):
-    gen = len([plaintxt]) % 2
-    if gen != 0:
-        plaintxt += "x" * gen
+    if len(plaintxt) % 2 != 0:
+        plaintxt += "x"
+
     chars = list(plaintxt)
     bigram = []
-    for i in range(0, len(chars) - 1, 2):
-        if chars[i] == chars[i + 1]:
+    i = 0
+    while i < len(chars):
+        if i + 1 < len(chars):
+            if chars[i] == chars[i + 1]:
+                bigram.append([chars[i], "x"])
+                i += 1
+            else:
+                bigram.append([chars[i], chars[i + 1]])
+                i += 2
+        else:
             bigram.append([chars[i], "x"])
-        bigram.append([chars[i], chars[i + 1]])
-    # print(bigram)
+            i += 1
+
     return bigram
 
 
-def findrc(str, key):
+def findrc(char, key):
     for i in range(5):
         for j in range(5):
-            if key[i][j] == str:
+            if key[i][j] == char:
                 return (i, j)
-    return (
-        -1,
-        -1,
-    )
+    return (-1, -1)
 
 
 def encrypt(plaintxt, key):
@@ -88,20 +88,22 @@ def transmit(ciphertext, key):
     s.listen(5)
     c, addr = s.accept()
     try:
-        key_str = ",".join(map(str, key))
-        cipher_str = ",".join(map(str, ciphertext))
-        data = key_str + "|" + cipher_str
+        key_str = "|".join([",".join(row) for row in key])
+        data = key_str + "||" + ciphertext
         c.sendall(data.encode())
     finally:
         c.close()
-        s.close()
+        # s.close()
 
 
 if __name__ == "__main__":
     plaintxt = "attack"
     key = "monarchy"
     ckey = keygen(key)
+    print("Key Matrix:")
     for i in ckey:
         print(i)
     ciphertext = encrypt(plaintxt, ckey)
+    print(f"Plaintext: {plaintxt}")
+    print(f"Ciphertext: {ciphertext}")
     transmit(ciphertext, ckey)

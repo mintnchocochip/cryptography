@@ -1,0 +1,27 @@
+{
+  "timestamp": "Thu 12/18/2025",
+  "kept_installation": "C:\\Python313\\python.exe",
+  "removed_installations": [
+    {
+      "path": "C:\\Python313\\python.exe",
+      "source": "PATH"
+    },
+    {
+      "path": "C:\\msys64\\ucrt64\\bin\\python.exe",
+      "source": "PATH"
+    },
+    {
+      "path": "C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe",
+      "source": "PATH"
+    },
+    {
+      "path": "C:\\msys64\\ucrt64\\bin\\python3.exe",
+      "source": "PATH"
+    },
+    {
+      "path": "C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe",
+      "source": "PATH"
+    }
+  ],
+  "original_path": "C:\\Program Files\\PowerShell\\7;C:\\Python313\\Scripts\\;C:\\Python313\\;C:\\Program Files\\Microsoft\\jdk-17.0.17.10-hotspot\\bin;C:\\app\\Shawf\\product\\23ai\\dbhomeFree\\bin;C:\\Users\\Shawf\\dbhomeFree\\bin;C:\\Program Files\\Common Files\\Oracle\\Java\\javapath;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\java8path;C:\\Program Files (x86)\\Common Files\\Oracle\\Java\\javapath;C:\\Program Files (x86)\\VMware\\VMware Workstation\\bin\\;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Program Files\\dotnet\\;C:\\ProgramData\\chocolatey\\bin;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-7.1-full_build\\bin;C:\\Program Files\\Crucial\\Crucial Storage Executive;C:\\Users\\Shawf\\AppData\\Roaming\\Python\\Python313\\Scripts;C:\\Program Files\\Git LFS;C:\\Program Files\\PowerShell\\7\\;C:\\Program Files\\Git\\cmd;C:\\Program Files\\Neovim\\bin;C:\\Program Files\\nodejs\\;C:\\Program Files\\Docker\\Docker\\resources\\bin;C:\\Program Files\\Pandoc\\;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Python\\Launcher\\;C:\\Users\\Shawf\\scoop\\shims;C:\\msys64\\ucrt64\\bin;C:\\Users\\Shawf\\.cargo\\bin;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Microsoft VS Code Insiders\\bin;C:\\Users\\Shawf\\go\\bin;C:\\Users\\Shawf\\AppData\\Local\\GitHubDesktop\\bin;C:\\Users\\Shawf\\AppData\\Local\\Programs\\oh-my-posh\\bin;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Microsoft VS Code\\bin;C:\\Users\\Shawf\\AppData\\Local\\JetBrains\\Toolbox\\scripts;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Links;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\ajeetdsouza.zoxide_Microsoft.Winget.Source_8wekyb3d8bbwe;c:\\users\\shawf\\.local\\bin;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Ollama;C:\\Users\\Shawf\\.lmstudio\\bin;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Schniz.fnm_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Fastfetch-cli.Fastfetch_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Zed\\bin;C:\\Users\\Shawf\\AppData\\Local\\Programs\\Antigravity\\bin;C:\\Users\\Shawf\\AppData\\Roaming\\npm;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\\ffmpeg-8.0.1-full_build\\bin;C:\\Users\\Shawf\\AppData\\Local\\PowerToys\\DSCModules\\;C:\\Users\\Shawf\\AppData\\Local\\Microsoft\\WinGet\\Packages\\JesseDuffield.lazygit_Microsoft.Winget.Source_8wekyb3d8bbwe;"
+}
