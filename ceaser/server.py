@@ -24,5 +24,5 @@ def receive():
 if __name__ == "__main__":
     key, ciphertxt = receive()
     plaintxt = decrypt(ciphertxt, int(key))
-    print(ciphertxt)
-    print(plaintxt)
+    print("Received: ", ciphertxt)
+    print("Decrypted: ", plaintxt)
