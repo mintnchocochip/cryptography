@@ -69,8 +69,5 @@ def receive():
 if __name__ == "__main__":
     ciphertxt, key = receive()
     plaintxt = decrypt(ciphertxt, key)
-    print("Key Matrix:")
-    for row in key:
-        print(row)
     print(f"Received ciphertext: {ciphertxt}")
     print(f"Decrypted plaintext: {plaintxt}")

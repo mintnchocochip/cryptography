@@ -89,6 +89,7 @@ if __name__ == "__main__":
     try:
         key, ciphertxt = receive()
         plaintxt = decrypt(ciphertxt, key)
-        print(plaintxt)
+        print("Received: ", ciphertxt)
+        print("Decrypted: ", plaintxt)
     except Exception as e:
         print(f"Error: {e}")

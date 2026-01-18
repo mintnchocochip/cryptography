@@ -67,5 +67,6 @@ if __name__ == "__main__":
     plaintxt = "abcxyztuv"
     key = "gybnqkurp"
     encrypted = encrypt(plaintxt, key)
+    print("Plaintext: ", plaintxt)
     print(f"Encrypted: {encrypted}")
     transmit(encrypted, key)
