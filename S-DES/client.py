@@ -11,7 +11,7 @@ S1 = [[0, 1, 2, 3], [2, 0, 1, 3], [3, 0, 1, 0], [2, 1, 0, 3]]
 
 
 def permute(bits, table):
-    return [bits[index - 1] for index in table]
+    return [bits[i - 1] for i in table]
 
 
 def shift(bits, n):
@@ -24,8 +24,8 @@ def xor(bits_a, bits_b):
 
 def bin_to_int(bits):
     value = 0
-    for bit in bits:
-        value = (value << 1) | bit
+    for b in bits:
+        value = (value << 1) | b
     return value
 
 
@@ -36,16 +36,17 @@ def int_to_bin(value, width):
 def sbox_lookup(bits, box):
     row = (bits[0] << 1) | bits[3]
     col = (bits[1] << 1) | bits[2]
-    return int_to_bin(box[row][col], 2)
+    result = box[row][col]
+    return int_to_bin(result, 2)
 
 
 def fk(block, key):
     left = block[:4]
     right = block[4:]
     expanded = permute(right, EP)
-    mixed = xor(expanded, key)
-    left_half = mixed[:4]
-    right_half = mixed[4:]
+    temp = xor(expanded, key)
+    left_half = temp[:4]
+    right_half = temp[4:]
     s0_out = sbox_lookup(left_half, S0)
     s1_out = sbox_lookup(right_half, S1)
     p4_out = permute(s0_out + s1_out, P4)
@@ -65,8 +66,8 @@ def generate_subkeys(key_bits):
     return k1, k2
 
 
-def decrypt_block(block_bits, k1, k2):
-    ip = permute(block_bits, IP)
+def decrypt_block(cipher_bits, k1, k2):
+    ip = permute(cipher_bits, IP)
     print(f"IP: {''.join(map(str, ip))}")
 
     round1 = fk(ip, k2)
@@ -75,38 +76,64 @@ def decrypt_block(block_bits, k1, k2):
 
     round2 = fk(swapped, k1)
     print(f"Round 2: {''.join(map(str, round2))}")
-    plain_bits = permute(round2, IP_INV)
-    return chr(bin_to_int(plain_bits))
+    plaintext = permute(round2, IP_INV)
+    return bin_to_int(plaintext)
 
 
-def decrypt_cipher(cipher_text, k1, k2):
-    plaintext = ""
-    for index in range(0, len(cipher_text), 8):
-        block = cipher_text[index : index + 8]
-        block_bits = [int(bit) for bit in block]
-        plaintext += decrypt_block(block_bits, k1, k2)
-    return plaintext
+def decrypt_message(cipher_text, k1, k2):
+    message = ""
+    for i in range(0, len(cipher_text), 8):
+        cipher_block = cipher_text[i : i + 8]
+        cipher_bits = [int(bit) for bit in cipher_block]
+        char_code = decrypt_block(cipher_bits, k1, k2)
+        message += chr(char_code)
+    return message
 
 
 def receive_payload():
     client = socket.socket()
-    client.connect(("127.0.0.1", 65432))
-    payload = client.recv(1024).decode()
-    client.close()
-    key, cipher_text = payload.split(":")
-    return key, cipher_text
+    try:
+        client.connect(("127.0.0.1", 65432))
+        payload = client.recv(1024).decode()
+        client.close()
+        return payload
+    except Exception as e:
+        print(f"Connection error: {e}")
+        return None
+
+
+def main():
+    print("=" * 50)
+    print("S-DES CLIENT - RECEIVER")
+    print("=" * 50)
+
+    print("Waiting for transmission from server...")
+    payload = receive_payload()
+
+    if payload is None:
+        print("Failed to receive data from server")
+        return
+
+    key, cipher_text = payload.split(":", 1)
+    key_bits = [int(bit) for bit in key]
+    k1, k2 = generate_subkeys(key_bits)
+
+    k1_str = "".join(map(str, k1))
+    k2_str = "".join(map(str, k2))
+
+    print("\nReceived:")
+    print(f"Key: {key}")
+    print(f"Cipher Text: {cipher_text}")
+    print("\nSubkeys:")
+    print(f"K1: {k1_str}")
+    print(f"K2: {k2_str}")
+    print("\nIntermediate Results (IP, Round 1, 2) in binary format:")
+
+    decrypted_message = decrypt_message(cipher_text, k1, k2)
+
+    print(f"\nDecrypted Message: {decrypted_message}")
+    print("=" * 50)
 
 
 if __name__ == "__main__":
-    key_string, cipher_string = receive_payload()
-    key_bits = [int(bit) for bit in key_string]
-    k1, k2 = generate_subkeys(key_bits)
-    k1_string = "".join(map(str, k1))
-    k2_string = "".join(map(str, k2))
-    print(f"Received Cipher Text: {cipher_string}")
-    print("Subkeys:")
-    print(f"K1: {k1_string}")
-    print(f"K2: {k2_string}")
-    print("Intermediate Results (IP, Round 1, 2) in binary format:")
-    plaintext = decrypt_cipher(cipher_string, k1, k2)
-    print(f"Text after decryption: {plaintext}")
+    main()
