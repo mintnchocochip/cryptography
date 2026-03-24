@@ -14,7 +14,7 @@ def encrypt(str, key):
 def transmit(str, key):
     s = socket.socket()
     port = 8080
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1) ## to ensure that the address is allocated properly
     s.bind(("127.0.0.1", port))
     s.listen(5)
     while True:
