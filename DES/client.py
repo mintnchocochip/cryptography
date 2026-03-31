@@ -1,5 +1,30 @@
 import socket
 
+
+def bits_to_int(bits):
+    return int("".join(map(str, bits)), 2) if bits else 0
+
+
+def int_to_bits(n, width):
+    s = format(n, f"0{width}b")
+    return list(map(int, s))
+
+
+def hex_to_bits(h):
+    # Each hex char -> 4 bits
+    bits = []
+    for ch in h.strip():
+        bits.extend(int_to_bits(int(ch, 16), 4))
+    return bits
+
+
+def bits_to_hex(bits):
+    # Bits length should be multiple of 4
+    h = ""
+    for i in range(0, len(bits), 4):
+        h += format(bits_to_int(bits[i : i + 4]), "x")
+    return h
+
 IP = [58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7]
 IP_INV = [40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31, 38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29, 36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27, 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25]
 E = [32, 1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 8, 9, 10, 11, 12, 13, 12, 13, 14, 15, 16, 17, 16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25, 24, 25, 26, 27, 28, 29, 28, 29, 30, 31, 32, 1]
@@ -111,7 +136,8 @@ def generate_keys(key_bytes):
     return keys
 
 
-def hex_to_bits(h):
+def _hex_to_bits_old(h):
+    # deprecated: kept only to avoid breakage if referenced elsewhere
     bits = []
     for ch in h.strip():
         v = int(ch, 16)
@@ -120,7 +146,8 @@ def hex_to_bits(h):
     return bits
 
 
-def bits_to_hex(bits):
+def _bits_to_hex_old(bits):
+    # deprecated: kept only to avoid breakage if referenced elsewhere
     h = ""
     for i in range(0, len(bits), 4):
         nib = 0
@@ -165,10 +192,7 @@ def decrypt(cipher_hex, key):
         logs.append(steps)
     msg_bytes = []
     for i in range(0, len(plain_bits), 8):
-        byte = 0
-        for b in plain_bits[i : i + 8]:
-            byte = (byte << 1) | b
-        msg_bytes.append(byte)
+        msg_bytes.append(bits_to_int(plain_bits[i : i + 8]))
     return bytes(msg_bytes).decode().rstrip(), logs
 
 

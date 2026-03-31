@@ -10,6 +10,16 @@ S0 = [[1, 0, 3, 2], [3, 2, 1, 0], [0, 2, 1, 3], [3, 1, 3, 2]]
 S1 = [[0, 1, 2, 3], [2, 0, 1, 3], [3, 0, 1, 0], [2, 1, 0, 3]]
 
 
+def bits_to_int(bits):
+    return int("".join(map(str, bits)), 2)
+
+
+def int_to_bits(n, width):
+    # fixed-width, MSB-first
+    s = format(n, f"0{width}b")
+    return list(map(int, s))
+
+
 def permute(bits, table):
     return [bits[i - 1] for i in table]
 
@@ -23,14 +33,11 @@ def xor(bits_a, bits_b):
 
 
 def bin_to_int(bits):
-    value = 0
-    for b in bits:
-        value = (value << 1) | b
-    return value
+    return bits_to_int(bits)
 
 
 def int_to_bin(value, width):
-    return [(value >> i) & 1 for i in range(width - 1, -1, -1)]
+    return int_to_bits(value, width)
 
 
 def sbox_lookup(bits, box):

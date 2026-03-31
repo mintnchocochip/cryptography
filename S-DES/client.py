@@ -23,14 +23,15 @@ def xor(bits_a, bits_b):
 
 
 def bin_to_int(bits):
-    value = 0
-    for b in bits:
-        value = (value << 1) | b
-    return value
+    return int("".join(map(str, bits)), 2)
 
 
 def int_to_bin(value, width):
-    return [(value >> i) & 1 for i in range(width - 1, -1, -1)]
+    s = bin(value)[2:]
+    if len(s) > width:
+        s = s[-width:]
+    s = s.zfill(width)
+    return list(map(int, s))
 
 
 def sbox_lookup(bits, box):
@@ -84,7 +85,7 @@ def decrypt_message(cipher_text, k1, k2):
     message = ""
     for i in range(0, len(cipher_text), 8):
         cipher_block = cipher_text[i : i + 8]
-        cipher_bits = [int(bit) for bit in cipher_block]
+        cipher_bits = list(map(int, cipher_block))
         char_code = decrypt_block(cipher_bits, k1, k2)
         message += chr(char_code)
     return message
