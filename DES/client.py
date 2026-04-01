@@ -2,12 +2,23 @@ import socket
 
 
 def bits_to_int(bits):
-    return int("".join(map(str, bits)), 2) if bits else 0
+    return int("".join(map(str, bits)), 2)
 
 
 def int_to_bits(n, width):
     s = format(n, f"0{width}b")
     return list(map(int, s))
+
+
+def bits_str(bits):
+    return "".join(map(str, bits))
+
+
+
+# (removed duplicate bits_to_int)
+
+
+# (removed duplicate int_to_bits)
 
 
 def hex_to_bits(h):
@@ -85,11 +96,12 @@ SBOX = [
 
 
 def to_bits(data):
+    # bytes -> bits (MSB first)
     bits = []
     for b in data:
-        for i in range(7, -1, -1):
-            bits.append((b >> i) & 1)
+        bits.extend(int_to_bits(b, 8))
     return bits
+
 
 
 def permute(bits, table):
@@ -108,12 +120,15 @@ def sbox_sub(bits):
     out = []
     for i in range(8):
         block = bits[i * 6 : (i + 1) * 6]
-        r = (block[0] << 1) | block[5]
-        c = (block[1] << 3) | (block[2] << 2) | (block[3] << 1) | block[4]
-        val = SBOX[i][r][c]
-        for k in range(3, -1, -1):
-            out.append((val >> k) & 1)
+
+        # row = b1b6, col = b2b3b4b5 (index-based via string->int(base2))
+        row = int(f"{block[0]}{block[5]}", 2)
+        col = int(bits_str(block[1:5]), 2)
+
+        val = SBOX[i][row][col]
+        out.extend(int_to_bits(val, 4))
     return out
+
 
 
 def f(right, subkey):
@@ -136,25 +151,7 @@ def generate_keys(key_bytes):
     return keys
 
 
-def _hex_to_bits_old(h):
-    # deprecated: kept only to avoid breakage if referenced elsewhere
-    bits = []
-    for ch in h.strip():
-        v = int(ch, 16)
-        for i in range(3, -1, -1):
-            bits.append((v >> i) & 1)
-    return bits
 
-
-def _bits_to_hex_old(bits):
-    # deprecated: kept only to avoid breakage if referenced elsewhere
-    h = ""
-    for i in range(0, len(bits), 4):
-        nib = 0
-        for b in bits[i : i + 4]:
-            nib = (nib << 1) | b
-        h += format(nib, "x")
-    return h
 
 
 def des_block(block_bits, keys):
@@ -181,19 +178,19 @@ def recv_payload():
 
 def decrypt(cipher_hex, key):
     cipher_bits = hex_to_bits(cipher_hex)
+    if len(cipher_bits) != 64:
+        raise ValueError("Single-block mode only: cipher text must be exactly 16 hex chars (64 bits)")
+
     key_bytes = key.encode()[:8].ljust(8, b" ")
     keys = generate_keys(key_bytes)
-    plain_bits = []
-    logs = []
-    for i in range(0, len(cipher_bits), 64):
-        block_bits = cipher_bits[i : i + 64]
-        pb, steps = des_block(block_bits, keys)
-        plain_bits += pb
-        logs.append(steps)
+
+    pb, steps = des_block(cipher_bits, keys)
+
     msg_bytes = []
-    for i in range(0, len(plain_bits), 8):
-        msg_bytes.append(bits_to_int(plain_bits[i : i + 8]))
-    return bytes(msg_bytes).decode().rstrip(), logs
+    for i in range(0, 64, 8):
+        msg_bytes.append(bits_to_int(pb[i : i + 8]))
+
+    return bytes(msg_bytes).decode(errors="ignore"), [steps]
 
 
 if __name__ == "__main__":

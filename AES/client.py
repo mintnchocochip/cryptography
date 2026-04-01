@@ -151,15 +151,7 @@ def bytes_from_hex(hex_str: str) -> List[int]:
     return [int(hex_str[i : i + 2], 16) for i in range(0, len(hex_str), 2)]
 
 
-def pkcs7_unpad(data: bytes) -> bytes:
-    if not data:
-        return data
-    pad_len = data[-1]
-    if pad_len == 0 or pad_len > 16:
-        return data
-    if data[-pad_len:] != bytes([pad_len]) * pad_len:
-        return data
-    return data[:-pad_len]
+# Single-block demo: no PKCS#7 padding is used.
 
 
 def decrypt_block(
@@ -191,22 +183,19 @@ def decrypt_block(
 
 
 def decrypt_message(cipher_hex: str, key_hex: str) -> Tuple[str, List[str]]:
+    # Single-block AES-128 only (16 bytes ciphertext, 16 bytes key)
     key_bytes = bytes_from_hex(key_hex)
     round_keys = expand_key(key_bytes)
 
-    if len(cipher_hex) % 32 != 0:
-        raise ValueError("Cipher text hex length must be multiple of 32 (16 bytes)")
+    if len(cipher_hex) != 32:
+        raise ValueError("Single-block mode only: cipher text hex must be exactly 32 hex chars (16 bytes)")
 
     logs: List[str] = []
-    plaintext_bytes: List[int] = []
-    for i in range(0, len(cipher_hex), 32):
-        block_hex = cipher_hex[i : i + 32]
-        block_bytes = bytes_from_hex(block_hex)
-        plain_block, block_logs = decrypt_block(block_bytes, round_keys)
-        logs.extend([f"Block {i // 32} - {entry}" for entry in block_logs])
-        plaintext_bytes.extend(plain_block)
+    block_bytes = bytes_from_hex(cipher_hex)
+    plain_block, block_logs = decrypt_block(block_bytes, round_keys)
+    logs.extend([f"Block 0 - {entry}" for entry in block_logs])
 
-    plaintext = pkcs7_unpad(bytes(plaintext_bytes)).decode(errors="ignore")
+    plaintext = bytes(plain_block).decode(errors="ignore")
     return plaintext, logs
 
 

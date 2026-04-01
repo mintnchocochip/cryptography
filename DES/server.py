@@ -1,12 +1,18 @@
 import socket
 
 
+def bits_str(bits):
+    return "".join(map(str, bits))
+
+
 def bits_to_int(bits):
     return int("".join(map(str, bits)), 2)
+
 
 def int_to_bits(n, width):
     s = format(n, f"0{width}b")
     return list(map(int, s))
+
 
 IP = [58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7]
 IP_INV = [40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31, 38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29, 36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27, 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25]
@@ -91,11 +97,10 @@ def sbox_sub(bits):
     out = []
     for i in range(8):
         block = bits[i * 6 : (i + 1) * 6]
-        r = (block[0] << 1) | block[5]
-        c = (block[1] << 3) | (block[2] << 2) | (block[3] << 1) | block[4]
-        val = SBOX[i][r][c]
-        for k in range(3, -1, -1):
-            out.append((val >> k) & 1)
+        row = int(f"{block[0]}{block[5]}", 2)
+        col = int(bits_str(block[1:5]), 2)
+        val = SBOX[i][row][col]
+        out.extend(int_to_bits(val, 4))
     return out
 
 
@@ -133,24 +138,19 @@ def des_block(block_bits, keys):
     return cipher, steps
 
 
-def pad(data):
-    if len(data) % 8 != 0:
-        data += b" " * (8 - len(data) % 8)
-    return data
+
 
 
 def encrypt(message, key):
-    data = pad(message.encode())
-    key_bytes = key.encode()[:8].ljust(8, b" ")
+    # Single-block DES only (8 bytes plaintext, 8 bytes key)
+    block = message.encode("utf-8")[:8].ljust(8, b" ")
+    key_bytes = key.encode("utf-8")[:8].ljust(8, b" ")
+
     keys = generate_keys(key_bytes)
-    cipher_bits = []
-    logs = []
-    for i in range(0, len(data), 8):
-        block_bits = to_bits(data[i : i + 8])
-        cb, steps = des_block(block_bits, keys)
-        cipher_bits += cb
-        logs.append(steps)
-    return cipher_bits, logs
+
+    block_bits = to_bits(block)
+    cipher_bits, steps = des_block(block_bits, keys)
+    return cipher_bits, [steps]
 
 
 def bits_to_hex(bits):
@@ -179,16 +179,19 @@ def transmit(key, cipher_hex):
 
 
 if __name__ == "__main__":
-    msg = input("Message/Plaintext: ")
-    key = input("Key: ")
+    msg = input("Message/Plaintext (8 chars max): ")
+    key = input("Key (8 chars max): ")
+
     cipher_bits, logs = encrypt(msg, key)
     cipher_hex = bits_to_hex(cipher_bits)
-    print("Key:", key)
+
+    print("Key:", key[:8])
     print("Intermediate Results(IP, Round 1, 2......16, ) in HEX format")
-    for block_index, steps in enumerate(logs):
-        print("Block" + str(block_index + 1))
-        print("IP:" + bits_to_hex(steps[0]))
-        for i in range(1, 17):
-            print("Round" + str(i) + ":" + bits_to_hex(steps[i]))
+    steps = logs[0]
+    print("Block1")
+    print("IP:" + bits_to_hex(steps[0]))
+    for i in range(1, 17):
+        print("Round" + str(i) + ":" + bits_to_hex(steps[i]))
+
     print("Print Cipher Text:", cipher_hex)
-    transmit(key, cipher_hex)
+    transmit(key[:8], cipher_hex)
