@@ -47,11 +47,7 @@ def decrypt(ciphertxt, key):
     if det == 0:
         return "Error: Key not invertible"
 
-    inv = det
-    for i in range(1, 26):
-        if (det * i) % 26 == 1:
-            inv = i
-            break
+    inv = pow(det % 26, -1, 26)
 
     Ks = Matrix(K)
     Ks = Ks.adjugate()
