@@ -4,22 +4,12 @@ import socket
 def bits_to_int(bits):
     return int("".join(map(str, bits)), 2)
 
-
 def int_to_bits(n, width):
     s = format(n, f"0{width}b")
     return list(map(int, s))
 
-
 def bits_str(bits):
     return "".join(map(str, bits))
-
-
-
-# (removed duplicate bits_to_int)
-
-
-# (removed duplicate int_to_bits)
-
 
 def hex_to_bits(h):
     # Each hex char -> 4 bits
@@ -103,7 +93,6 @@ def to_bits(data):
     return bits
 
 
-
 def permute(bits, table):
     return [bits[i - 1] for i in table]
 
@@ -130,7 +119,6 @@ def sbox_sub(bits):
     return out
 
 
-
 def f(right, subkey):
     expanded = permute(right, E)
     xored = xor(expanded, subkey)
@@ -149,10 +137,6 @@ def generate_keys(key_bytes):
         d = left_shift(d, s)
         keys.append(permute(c + d, PC2))
     return keys
-
-
-
-
 
 def des_block(block_bits, keys):
     state = permute(block_bits, IP)
@@ -183,14 +167,6 @@ def decrypt(cipher_hex, key):
 
     key_bytes = key.encode()[:8].ljust(8, b" ")
     keys = generate_keys(key_bytes)
-
-    pb, steps = des_block(cipher_bits, keys)
-
-    msg_bytes = []
-    for i in range(0, 64, 8):
-        msg_bytes.append(bits_to_int(pb[i : i + 8]))
-
-    return bytes(msg_bytes).decode(errors="ignore"), [steps]
 
 
 if __name__ == "__main__":
