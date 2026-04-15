@@ -30,13 +30,26 @@ H0 = [
     0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
 ]
 
-rotr = lambda x, n: ((x >> n) | ((x << (64 - n)) & MASK64)) & MASK64
-Ch = lambda x, y, z: (x & y) ^ ((~x) & z)
-Maj = lambda x, y, z: (x & y) ^ (x & z) ^ (y & z)
-SUM0 = lambda x: rotr(x, 28) ^ rotr(x, 34) ^ rotr(x, 39)
-SUM1 = lambda x: rotr(x, 14) ^ rotr(x, 18) ^ rotr(x, 41)
-sigma0 = lambda x: rotr(x, 1) ^ rotr(x, 8) ^ (x >> 7)
-sigma1 = lambda x: rotr(x, 19) ^ rotr(x, 61) ^ (x >> 6)
+def rotr(x, n): 
+    return ((x >> n) | ((x << (64 - n)) & MASK64)) & MASK64
+
+def Ch(x, y, z): 
+    return (x & y) ^ ((~x) & z)
+
+def Maj(x, y, z): 
+    return (x & y) ^ (x & z) ^ (y & z)
+
+def SUM0(x): 
+    return rotr(x, 28) ^ rotr(x, 34) ^ rotr(x, 39)
+
+def SUM1(x): 
+    return rotr(x, 14) ^ rotr(x, 18) ^ rotr(x, 41)
+
+def sigma0(x): 
+    return rotr(x, 1) ^ rotr(x, 8) ^ (x >> 7)
+
+def sigma1(x): 
+    return rotr(x, 19) ^ rotr(x, 61) ^ (x >> 6)
 
 def pad(msg: bytes) -> bytes:
     bit_len = len(msg) * 8

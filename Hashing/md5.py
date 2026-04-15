@@ -10,43 +10,56 @@ S = [
     6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,
 ]
 
-F = lambda B, C, D: (B & C) | (~B & D)
-G = lambda B, C, D: (B & D) | (C & ~D)
-H = lambda B, C, D: B ^ C ^ D
-I = lambda B, C, D: C ^ (B | ~D)
-left_rotate = lambda x, n: ((x << n) | (x >> (32 - n))) & 0xFFFFFFFF
+def F(B, C, D): 
+    return (B & C) | (~B & D)
+
+def G(B, C, D): 
+    return (B & D) | (C & ~D)
+
+def H(B, C, D): 
+    return B ^ C ^ D
+
+def I(B, C, D): 
+    return C ^ (B | ~D)
+
+def left_rotate(x, n): 
+    return ((x << n) | (x >> (32 - n))) & 0xFFFFFFFF
 
 def preprocess(msg: bytes):
     original_len = len(msg) * 8
     padded = bytearray(msg)
     padded.append(0x80)
-
+    
     while len(padded) % 64 != 56:
         padded.append(0)
-
+        
     padded.extend(original_len.to_bytes(8, 'little'))
-
+    
     blocks = []
     for i in range(0, len(padded), 64):
         chunk = padded[i : i + 64]
         words = [int.from_bytes(chunk[j : j + 4], 'little') for j in range(0, 64, 4)]
         blocks.append(words)
-
+        
     return blocks
 
 def md5(msg: bytes) -> str:
     A, B, C, D = A0, B0, C0, D0
-
+    
     for block in preprocess(msg):
         a, b, c, d = A, B, C, D
-
+        
         for i in range(64):
-            if i < 16:   func, k = F(b, c, d), i
-            elif i < 32: func, k = G(b, c, d), (5 * i + 1) % 16
-            elif i < 48: func, k = H(b, c, d), (3 * i + 5) % 16
-            else:        func, k = I(b, c, d), (7 * i) % 16
+            if i < 16:   
+                f_val, k = F(b, c, d), i
+            elif i < 32: 
+                f_val, k = G(b, c, d), (5 * i + 1) % 16
+            elif i < 48: 
+                f_val, k = H(b, c, d), (3 * i + 5) % 16
+            else:        
+                f_val, k = I(b, c, d), (7 * i) % 16
 
-            temp = (func + a + block[k] + T[i]) & 0xFFFFFFFF
+            temp = (f_val + a + block[k] + T[i]) & 0xFFFFFFFF
             a, d, c, b = d, c, b, (b + left_rotate(temp, S[i])) & 0xFFFFFFFF
 
         A = (A + a) & 0xFFFFFFFF
