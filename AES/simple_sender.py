@@ -20,6 +20,32 @@ SBOX = [
     0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16
 ]
 
+RCON = [0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36]
+
+def expand_key(key_bytes):
+    words = []
+    for i in range(0, 16, 4):
+        words.append(list(key_bytes[i:i+4])) 
+        
+    for i in range(4, 44):
+        temp = words[i - 1][:]
+        if i % 4 == 0:
+            temp = temp[1:] + temp[:1]          
+            temp = [SBOX[b] for b in temp]      
+            temp[0] ^= RCON[(i // 4) - 1]       
+        new_word = [words[i - 4][j] ^ temp[j] for j in range(4)]
+        words.append(new_word)
+        
+    matrices = []
+    for i in range(11):
+        matrix = [[0]*4 for _ in range(4)]
+        for c in range(4):
+            for r in range(4):
+                matrix[r][c] = words[i * 4 + c][r]
+        matrices.append(matrix)
+        
+    return matrices
+
 def bytes_to_matrix(data):
     matrix = [[0]*4 for _ in range(4)]
     for i in range(16):
@@ -42,10 +68,10 @@ def sub_bytes(state):
     return state
 
 def shift_rows(state):
-    state[0] = state[0]
-    state[1] = state[1][1:] + state[1][:1]
-    state[2] = state[2][2:] + state[2][:2]
-    state[3] = state[3][3:] + state[3][:3]
+    state[0] = state[0]                        
+    state[1] = state[1][1:] + state[1][:1]     
+    state[2] = state[2][2:] + state[2][:2]     
+    state[3] = state[3][3:] + state[3][:3]     
     return state
 
 def xtime(a):
@@ -60,15 +86,25 @@ def mix_columns(state):
         state[3][c] = xtime(s3 ^ s0) ^ s0 ^ s1 ^ s2
     return state
 
-def encrypt(plaintext_bytes, round_keys_matrices):
+def encrypt(plaintext_bytes, key_bytes):
+    round_keys_matrices = expand_key(key_bytes)
     state = bytes_to_matrix(plaintext_bytes)
     state = add_round_key(state, round_keys_matrices[0])
+    
     for i in range(1, 10):
         state = sub_bytes(state)
         state = shift_rows(state)
         state = mix_columns(state)
         state = add_round_key(state, round_keys_matrices[i])
+        
     state = sub_bytes(state)
     state = shift_rows(state)
     state = add_round_key(state, round_keys_matrices[10])
+    
     return matrix_to_bytes(state)
+
+if __name__ == '__main__':
+    key = b'Thats my Kung Fu'
+    msg = b'Two One Nine Two'
+    cipher = encrypt(msg, key)
+    print('Ciphertext:', ''.join(f'{b:02x}' for b in cipher))
