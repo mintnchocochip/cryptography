@@ -30,51 +30,35 @@ H0 = [
     0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179
 ]
 
-def rotr(x, n):
-    return ((x >> n) | ((x << (64 - n)) & MASK64)) & MASK64
-
-def Ch(x, y, z):
-    return (x & y) ^ ((~x) & z)
-
-def Maj(x, y, z):
-    return (x & y) ^ (x & z) ^ (y & z)
-
-def SUM0(x):    # Σ0
-    return rotr(x, 28) ^ rotr(x, 34) ^ rotr(x, 39)
-
-def SUM1(x):    # Σ1
-    return rotr(x, 14) ^ rotr(x, 18) ^ rotr(x, 41)
-
-def sigma0(x):  # σ0
-    return rotr(x, 1) ^ rotr(x, 8) ^ (x >> 7)
-
-def sigma1(x):  # σ1
-    return rotr(x, 19) ^ rotr(x, 61) ^ (x >> 6)
+rotr = lambda x, n: ((x >> n) | ((x << (64 - n)) & MASK64)) & MASK64
+Ch = lambda x, y, z: (x & y) ^ ((~x) & z)
+Maj = lambda x, y, z: (x & y) ^ (x & z) ^ (y & z)
+SUM0 = lambda x: rotr(x, 28) ^ rotr(x, 34) ^ rotr(x, 39)
+SUM1 = lambda x: rotr(x, 14) ^ rotr(x, 18) ^ rotr(x, 41)
+sigma0 = lambda x: rotr(x, 1) ^ rotr(x, 8) ^ (x >> 7)
+sigma1 = lambda x: rotr(x, 19) ^ rotr(x, 61) ^ (x >> 6)
 
 def pad(msg: bytes) -> bytes:
     bit_len = len(msg) * 8
-    m = msg + b"\x80"
-    while (len(m) % 128) != 112:
-        m += b"\x00"
-    m += bit_len.to_bytes(16, "big")
+    m = bytearray(msg)
+    m.append(0x80)
+    
+    while len(m) % 128 != 112:
+        m.append(0)
+        
+    m.extend(bit_len.to_bytes(16, 'big'))
     return m
 
 def sha512_manual(msg: bytes) -> str:
-    print("Output")
-    print("no of characters in the input")
-    print(len(msg))
-
     H = H0[:]
     m = pad(msg)
 
     for bi in range(0, len(m), 128):
-        block_index = (bi // 128) + 1
         block = m[bi:bi+128]
-        print(f"Block {block_index}: {block}")
 
         W = [0] * 80
         for t in range(16):
-            W[t] = int.from_bytes(block[t*8:(t+1)*8], "big")
+            W[t] = int.from_bytes(block[t*8:(t+1)*8], 'big')
         for t in range(16, 80):
             W[t] = (sigma1(W[t-2]) + W[t-7] + sigma0(W[t-15]) + W[t-16]) & MASK64
 
@@ -84,44 +68,12 @@ def sha512_manual(msg: bytes) -> str:
             T1 = (h + SUM1(e) + Ch(e, f, g) + K[t] + W[t]) & MASK64
             T2 = (SUM0(a) + Maj(a, b, c)) & MASK64
 
-            h = g
-            g = f
-            f = e
-            e = (d + T1) & MASK64
-            d = c
-            c = b
-            b = a
-            a = (T1 + T2) & MASK64
+            h, g, f, e = g, f, e, (d + T1) & MASK64
+            d, c, b, a = c, b, a, (T1 + T2) & MASK64
 
-            print(f"Round {t+1}")
-            print(f"T1={T1:016x} T2={T2:016x}")
-            print(
-                f"a={a:016x} b={b:016x} c={c:016x} d={d:016x} "
-                f"e={e:016x} f={f:016x} g={g:016x} h={h:016x}"
-            )
+        H = [(H[i] + var) & MASK64 for i, var in enumerate((a, b, c, d, e, f, g, h))]
 
-        H = [
-            (H[0] + a) & MASK64,
-            (H[1] + b) & MASK64,
-            (H[2] + c) & MASK64,
-            (H[3] + d) & MASK64,
-            (H[4] + e) & MASK64,
-            (H[5] + f) & MASK64,
-            (H[6] + g) & MASK64,
-            (H[7] + h) & MASK64,
-        ]
+    return ''.join(f'{x:016x}' for x in H)
 
-    digest = "".join(f"{x:016x}" for x in H)
-    print("Final Hash Value")
-    print(digest)
-    return digest
-
-def main():
-    if len(sys.argv) > 1:
-        s = " ".join(sys.argv[1:])
-    else:
-        s = sys.stdin.readline().rstrip("\n")
-    sha512_manual(s.encode("utf-8"))
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    print(f'SHA512(hello) = {sha512_manual(b"hello")}')
